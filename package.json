@@ -1,0 +1,24 @@
+{
+  "name": "minha-vaga",
+  "version": "1.0.0",
+  "description": "Aplicação voltada para quem está em busca de uma vaga de emprego",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WeslleiBrito/minha-vaga.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/WeslleiBrito/minha-vaga/issues"
+  },
+  "homepage": "https://github.com/WeslleiBrito/minha-vaga#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.6"
+  }
+}
