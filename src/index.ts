@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express'
+import { TApplication, TUser } from './types'
 import cors from 'cors'
 const sq = require('sqlite3').verbose()
-
 
 const db = new sq.Database('./base.db')
 
@@ -13,6 +13,13 @@ db.serialize(
     }
 )
 
+db.serialize(
+    () => {
+        db.run(
+            'CREATE TABLE IF NOT EXISTS applications (id INTEGER PRIMARY KEY, job_name TEXT, company_name TEXT, application_date TEXT, job_requirements TEXT, process_status TEXT)'
+        )
+    }
+)
 
 
 const app = express()
@@ -38,7 +45,8 @@ app.get('/dados', (req, res) => {
 
 // Inclui um novo usuário
 app.post('/usuarios', (req: Request, res: Response) => {
-    const { name, email } = req.body
+    const { name, email }: TUser = req.body
+
     const query = 'INSERT INTO users (name, email) VALUES (?, ?)'
 
     db.run(query, [name, email], (err: any) => {
@@ -54,6 +62,30 @@ app.post('/usuarios', (req: Request, res: Response) => {
         }
 
         res.json("Cadastro realizado com sucesso!")
+    })
+})
+
+// Incluir novo processo
+app.post('/aplicacao', (req: Request, res: Response) => {
+    const { jobName, companyName, applicationDate, jobRequirements, processStatus }: TApplication = req.body
+
+    const query = 'INSERT INTO applications (job_name, company_name, application_date, job_requirements, process_status) VALUES (?, ?, ?, ?, ?)'
+    
+    db.run(query, [jobName, companyName, applicationDate, jobRequirements.toString(), processStatus], (err: any) => {
+
+        if(err){
+            console.error('Erro ao inserir a nova aplicação da vaga!')
+
+            res.status(500).json(
+                {
+                    error: "Erro ao inserir a nova aplicação"
+                }
+            )
+
+            return
+        }
+
+        res.status(201).send('Cadastro efetuado com sucesso!')
     })
 })
 
