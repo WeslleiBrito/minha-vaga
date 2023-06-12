@@ -263,6 +263,29 @@ app.get('/aplicacao', (req: Request, res: Response) => {
     })
 })
 
+// Edita uma aplicação
+app.put('/aplicacao/:id', (req: Request, res: Response) => {
+
+    const id = Number(req.params.id)
+    console.log(id)
+
+
+    try {
+        const query = 'SELECT * FROM applications WHERE id = ?'
+
+        const result = db.all(query, id, (err: any, rows: any) => {
+            if (err) {
+                throw new Error(`Erro ao buscar os dados no banco de dados, ${err}`)
+            }
+            console.log(rows)
+            res.status(200).json(rows)
+        })
+    } catch (error: any) {
+
+        res.status(400).send(error.message)
+    }
+
+})
 
 app.listen(3003, () => {
     console.log("Api rodando na porta 3003!")
