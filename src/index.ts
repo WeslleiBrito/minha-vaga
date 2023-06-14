@@ -243,11 +243,11 @@ app.get('/aplicacao', (req: Request, res: Response) => {
 
 // Edita uma aplicação
 app.put('/aplicacao/:id', (req: Request, res: Response) => {
-
-
+    const id = req.params.id
+    console.log("ID:", id)
     try {
 
-        const id = req.params.id
+
 
         let { jobName, companyName, applicationDate, jobRequirements, processStatus } = req.body
 
@@ -257,64 +257,36 @@ app.put('/aplicacao/:id', (req: Request, res: Response) => {
         }
 
         const q = "SELECT * FROM applications"
-
+        let checkId
         db.all(q, (err: any, rows: any) => {
+
             if (err) {
-                console.log("erro de conexão")
+                throw new Error("Erro de comunicação com banco de dados")
             }
 
-            const idExists = rows.filter((item: any) => {
-                return item.id === Number(id)
-            })
+            const idsAplications = rows.map((app: any) => app.id)
 
-            if (idExists.length === 0) {
-                console.log("Encontrei um erro")
-                throw new Error(JSON.stringify(possibleSolutions.editApplication))
-            } else {
-                console.log("entrei no else")
+            if (idsAplications.includes(Number(id))) {
                 const query = 'SELECT * FROM applications WHERE id = ?'
-                let datasApplication: any
 
-                db.all(query, id, (err: any, rows: any) => {
-                    console.log("executei")
+                db.all(query, Number(id), (err: any, rows: any) => {
+
                     if (err) {
-                        throw new Error(JSON.stringify(possibleSolutions.editApplication))
+                        throw new Error("Erro de comunicação com banco de dados")
                     }
 
-                    datasApplication = rows[0]
-
-                    if (datasApplication) {
-
-                        jobName = jobName || datasApplication.job_name
-                        companyName = companyName || datasApplication.company_name
-                        applicationDate = applicationDate || datasApplication.application_date
-                        jobRequirements = jobRequirements || datasApplication.job_requirements.split(",")
-                        processStatus = processStatus || datasApplication.process_status
-
-                        validationApplication(jobName, companyName, applicationDate, jobRequirements, processStatus)
-
-                        db.all(query, Number(id), (err: any, rows: any) => {
-                            if (err) {
-                                throw new Error(`Erro ao buscar os dados no banco de dados, ${err}`)
-                            }
-
-
-                            console.log(rows)
-                            res.status(200).json(rows[0])
-                        })
-
-                    } else {
-                        throw new Error(JSON.stringify(possibleSolutions.editApplication))
-                    }
+                    res.send(rows)
 
                 })
+
+            } else {
+                res.send("Não encontrado!")
             }
+
         })
 
 
-
     } catch (error: any) {
-
         res.status(400).send(error.message)
     }
 
