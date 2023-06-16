@@ -243,117 +243,77 @@ app.get('/aplicacao', (req: Request, res: Response) => {
 
 // Edita uma aplicação
 app.put('/aplicacao/:id', (req: Request, res: Response) => {
-    const id = req.params.id
-    console.log("ID:", id)
+
     try {
+        const id = req.params.id
 
-
-
-        let { jobName, companyName, applicationDate, jobRequirements, processStatus } = req.body
+        const { jobName, companyName, applicationDate, jobRequirements, processStatus } = req.body
 
         if (isNaN(Number(id))) {
-            console.log("o erro foi no tipo")
-            throw new Error(JSON.stringify(possibleSolutions.editApplication))
+
+            const messageError = {
+                portuguese: [
+                    `Era esperado um valor do tipo "number", mas o valor enviado foi do tipo "${typeof id}".`
+                ]
+            }
+
+            res.status(400)
+            throw new Error(`${JSON.stringify(messageError)}`)
         }
 
-        const q = "SELECT * FROM applications"
-        let checkId
-        db.all(q, (err: any, rows: any) => {
 
-            if (err) {
-                throw new Error("Erro de comunicação com banco de dados")
-            }
+        try {
+            const query = 'SELECT * FROM applications WHERE id = ?'
 
-            const idsAplications = rows.map((app: any) => app.id)
+            db.get(query, [Number(id)], (err: any, row: any) => {
+                if (err) {
+                    res.status(500).send('Erro ao se conectar ao banco de dados!');
+                    return;
+                }
 
-            if (idsAplications.includes(Number(id))) {
-                const query = 'SELECT * FROM applications WHERE id = ?'
+                if (row) {
 
-                db.all(query, Number(id), (err: any, rows: any) => {
+                    Object.entries({ jobName, companyName, applicationDate }).map((item) => {
+                        const [key, value] = item
 
-                    if (err) {
-                        throw new Error("Erro de comunicação com banco de dados")
+                        if (typeof (value) !== "undefined") {
+                            if (typeof (value) !== "string") {
+                                res.status(400)
+                                throw new Error(`A propriedade "${key}" deveria ser do tipo "string", mas foi enviado um valor do tipo "${typeof value}".`)
+                            } else if (typeof (value) === "string" && value.length === 0) {
+                                res.send(`erro: A propriedade "${key}" não pode ser vazia".`)
+                            }
+                        }
+
+                    })
+
+                    const newData = {
+                        jobName: jobName || row.job_name,
+                        companyName: companyName || row.company_name,
+                        applicationDate: applicationDate || row.application_date,
+                        jobRequirements: jobRequirements || row.job_requirements,
+                        processStatus: processStatus || row.process_status
                     }
 
-                    res.send(rows)
+                    res.status(200).json(row);
+                } else {
+                    res.status(400)
+                    throw new Error('Id não consta em nossa base de dados!')
+                }
+            })
 
-                })
-
-            } else {
-                res.send("Não encontrado!")
-            }
-
-        })
+        } catch (error: any) {
+            res.status(500).send(error.message)
+        }
 
 
     } catch (error: any) {
-        res.status(400).send(error.message)
+        res.status(500).send(error.message)
     }
 
 })
 
-/* app.put('/aplicacao/:id', (req: Request, res: Response) => {
-    try {
-        const id = req.params.id;
 
-        if (isNaN(Number(id))) {
-            throw new Error("O ID fornecido é inválido");
-        }
-
-        const q = "SELECT * FROM applications";
-
-        db.all(q, (err: any, rows: any) => {
-            if (err) {
-                throw new Error("Erro de conexão");
-            }
-
-            const idExists = rows.filter((item: any) => {
-                return item.id === Number(id);
-            });
-
-            if (idExists.length > 0) {
-                const query = 'SELECT * FROM applications WHERE id = ?';
-                let datasApplication: any;
-
-                db.all(query, Number(id), (err: any, rows: any) => {
-                    if (err) {
-                        throw new Error("Erro ao buscar os dados no banco de dados");
-                    }
-
-                    datasApplication = rows[0];
-
-                    if (datasApplication) {
-                        let { jobName, companyName, applicationDate, jobRequirements, processStatus } = req.body;
-
-                        jobName = jobName || datasApplication.job_name;
-                        companyName = companyName || datasApplication.company_name;
-                        applicationDate = applicationDate || datasApplication.application_date;
-                        jobRequirements = jobRequirements || datasApplication.job_requirements.split(",");
-                        processStatus = processStatus || datasApplication.process_status;
-
-                        validationApplication(jobName, companyName, applicationDate, jobRequirements, processStatus);
-
-                        const updateQuery = 'UPDATE applications SET job_name = ?, company_name = ?, application_date = ?, job_requirements = ?, process_status = ? WHERE id = ?';
-
-                        db.run(updateQuery, [jobName, companyName, applicationDate, jobRequirements.join(","), processStatus, id], (err: any) => {
-                            if (err) {
-                                throw new Error(`Erro ao atualizar os dados no banco de dados: ${err}`);
-                            }
-
-                            res.status(200).json(datasApplication);
-                        });
-                    } else {
-                        throw new Error("Os dados da aplicação não foram encontrados");
-                    }
-                });
-            } else {
-                throw new Error("O ID fornecido não existe");
-            }
-        });
-    } catch (error: any) {
-        res.status(400).send(error.message);
-    }
-}); */
 
 app.listen(3003, () => {
     console.log("Api rodando na porta 3003!")
