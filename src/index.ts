@@ -248,6 +248,7 @@ app.put('/aplicacao/:id', (req: Request, res: Response) => {
         const id = req.params.id
 
         const { jobName, companyName, applicationDate, jobRequirements, processStatus } = req.body
+        console.log({ jobName, companyName, applicationDate, jobRequirements, processStatus })
 
         if (isNaN(Number(id))) {
 
@@ -273,7 +274,20 @@ app.put('/aplicacao/:id', (req: Request, res: Response) => {
 
                 if (row) {
 
-                    Object.entries({ jobName, companyName, applicationDate }).map((item) => {
+                    for (const key in { jobName: jobName, companyName: companyName, applicationDate: applicationDate }) {
+                        if (typeof (row[key]) !== "undefined") {
+                            console.log("O tipo não é undefined")
+                            if (typeof (row[key]) !== "string") {
+                                res.status(422)
+                                throw new Error(`A propriedade "${key}" deveria ser do tipo "string", mas foi enviado um valor do tipo "${typeof row[key]}".`)
+                            } else if (typeof (row[key]) === "string" && row[key].length === 0) {
+                                res.status(400)
+                                throw new Error(`A propriedade "${key}" não pode ser vazia".`)
+                            }
+                        }
+                    }
+
+                    /* Object.entries({ jobName, companyName, applicationDate }).map((item) => {
                         const [key, value] = item
 
                         if (typeof (value) !== "undefined") {
@@ -285,7 +299,7 @@ app.put('/aplicacao/:id', (req: Request, res: Response) => {
                             }
                         }
 
-                    })
+                    }) */
 
                     const newData = {
                         jobName: jobName || row.job_name,
