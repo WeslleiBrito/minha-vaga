@@ -1,9 +1,12 @@
 import express, { Request, Response } from 'express'
+import { getAllUsers } from './endpoints/getAllUsers'
+import { createUser } from './endpoints/createUser'
+
 import { LIST_STATUS, TUser } from './types'
 import cors from 'cors'
 const sq = require('sqlite3').verbose()
 
-const db = new sq.Database('./base.db')
+export const db = new sq.Database('D:/Usuário/wesll/OneDrive/Documentos/projetos-pessoais/minha-vaga/src/database/base.db')
 
 db.serialize(
     () => {
@@ -20,7 +23,6 @@ db.serialize(
         )
     }
 )
-
 
 const app = express()
 
@@ -100,41 +102,9 @@ const possibleSolutions = {
 }
 
 // Retorna todos os usuários
-
-app.get('/dados', (req, res) => {
-    const query = 'SELECT * FROM users'
-    db.all(query, (err: any, rows: any) => {
-        if (err) {
-            console.error('Erro ao buscar os dados no banco de dados', err.code)
-            res.status(500).json({ error: 'Erro ao buscar os dados no banco de dados' })
-            return
-        }
-        console.log(rows)
-        res.status(200).json(rows)
-    })
-})
-
-// Inclui um novo usuário
-app.post('/usuarios', (req: Request, res: Response) => {
-    const { name, email }: TUser = req.body
-
-    const query = 'INSERT INTO users (name, email) VALUES (?, ?)'
-
-    db.run(query, [name, email], (err: any) => {
-        if (err) {
-            console.error('Erro ao inserir o novo usuário', err)
-            res.status(500).json(
-                {
-                    error: 'Erro ao inserir o usuário'
-                }
-            )
-
-            return
-        }
-
-        res.json("Cadastro realizado com sucesso!")
-    })
-})
+app.get('/users', getAllUsers)
+// Incluir um novo usuário
+app.post('/users', createUser)
 
 const validationApplication = (jobName?: string, companyName?: string, applicationDate?: string, jobRequirements?: Array<string>, processStatus?: string, edit?: boolean, id?: string) => {
 
@@ -299,6 +269,7 @@ app.put('/aplicacao/:id', async (req: Request, res: Response) => {
     }
 
 })
+
 
 
 

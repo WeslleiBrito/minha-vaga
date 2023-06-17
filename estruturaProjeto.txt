@@ -1,0 +1,22 @@
+src
+	> databese
+		>> base.db
+	
+	> endponits
+		>> createUser.ts
+		>> getUserById.ts
+		>> updateUserById.ts
+		>> deleteUserById.ts
+		>> createApplication.ts
+		>> getAllApplication.ts
+		>> getApplicationById.ts
+		>> updateApplicationById.ts
+		>> deleteApplicationById.ts
+	
+	> interfaces
+		> enum
+			>> LIST_STATUS.enum.ts
+	
+		> types
+			>> User.type.ts
+			>> Application.type.ts
