@@ -242,11 +242,10 @@ app.get('/aplicacao', (req: Request, res: Response) => {
 })
 
 // Edita uma aplicação
-app.put('/aplicacao/:id', (req: Request, res: Response) => {
+app.put('/aplicacao/:id', async (req: Request, res: Response) => {
 
     try {
         const id = req.params.id
-        let currentItem
 
         const { jobName, companyName, applicationDate, jobRequirements, processStatus } = req.body
 
@@ -265,32 +264,30 @@ app.put('/aplicacao/:id', (req: Request, res: Response) => {
 
         const query = 'SELECT * FROM applications WHERE id = ?'
 
-        db.get(query, [Number(id)], (err: any, row: any) => {
-            if (err) {
-                res.status(500).send('Erro ao se conectar ao banco de dados!');
-                return;
-            }
-            
-            if (row) {
-                currentItem = row
-            }
-        })
+        const row = await new Promise((resolve, reject) => {
+            db.get(query, [Number(id)], (err: any, row: any) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve(row);
+            });
+        });
 
-        console.log(currentItem)
-        
-        if(!currentItem){
+
+        if (!row) {
             res.status(400)
             throw new Error('Id não consta em nossa base de dados!')
         }
-        
-        Object.entries({jobName, companyName, applicationDate}).map((item) => {
+
+        Object.entries({ jobName, companyName, applicationDate }).map((item) => {
             const [key, value] = item
 
-            if(typeof(value) !== "undefined"){
-                if(typeof(value) !== "string"){
+            if (typeof (value) !== "undefined") {
+                if (typeof (value) !== "string") {
                     res.status(422)
-                    throw new Error(`A propriedade "${key}" deveria ser do tipo "string", mas foi enviado um valor do tipo "${typeof(value)}".`)
-                }else if(typeof(value) === 'string' && value.length === 0){
+                    throw new Error(`A propriedade "${key}" deveria ser do tipo "string", mas foi enviado um valor do tipo "${typeof (value)}".`)
+                } else if (typeof (value) === 'string' && value.length === 0) {
                     res.status(400)
                     throw new Error(`A propriedade "${key}" não pode ser vazia".`)
                 }
