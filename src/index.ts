@@ -263,8 +263,6 @@ app.put('/aplicacao/:id', (req: Request, res: Response) => {
             throw new Error(`${JSON.stringify(messageError)}`)
         }
 
-
-    
         const query = 'SELECT * FROM applications WHERE id = ?'
 
         db.get(query, [Number(id)], (err: any, row: any) => {
@@ -275,40 +273,32 @@ app.put('/aplicacao/:id', (req: Request, res: Response) => {
             
             if (row) {
                 currentItem = row
-            } else {
-                res.status(400)
-                throw new Error('Id não consta em nossa base de dados!')
             }
         })
 
-        type TItens = {
-            jobName: string,
-            companyName: string,
-            applicationDate: string
-        }
-
-        const itensTest: TItens = {
-            jobName: jobName,
-            companyName: companyName,
-            applicationDate: applicationDate
+        console.log(currentItem)
+        
+        if(!currentItem){
+            res.status(400)
+            throw new Error('Id não consta em nossa base de dados!')
         }
         
-        for (const key in itensTest) {
-                    
-            if(itensTest[key as keyof TItens] !== undefined){
-                if(typeof(itensTest[key as keyof TItens]) !== 'string'){
+        Object.entries({jobName, companyName, applicationDate}).map((item) => {
+            const [key, value] = item
+
+            if(typeof(value) !== "undefined"){
+                if(typeof(value) !== "string"){
                     res.status(422)
-                    throw new Error(`A propriedade "${key}" deveria ser do tipo "string", mas foi enviado um valor do tipo "${typeof(itensTest[key as keyof TItens])}".`)
-                }else if(typeof(itensTest[key as keyof TItens]) === 'string' && itensTest[key as keyof TItens].length === 0){
+                    throw new Error(`A propriedade "${key}" deveria ser do tipo "string", mas foi enviado um valor do tipo "${typeof(value)}".`)
+                }else if(typeof(value) === 'string' && value.length === 0){
                     res.status(400)
                     throw new Error(`A propriedade "${key}" não pode ser vazia".`)
                 }
             }
-            
-        }
+        })
 
     } catch (error: any) {
-        res.status(500).send(error.message)
+        res.send(error.message)
     }
 
 })
