@@ -246,9 +246,10 @@ app.put('/aplicacao/:id', (req: Request, res: Response) => {
 
     try {
         const id = req.params.id
+        let currentItem
 
         const { jobName, companyName, applicationDate, jobRequirements, processStatus } = req.body
-        console.log({ jobName, companyName, applicationDate, jobRequirements, processStatus })
+
 
         if (isNaN(Number(id))) {
 
@@ -263,63 +264,48 @@ app.put('/aplicacao/:id', (req: Request, res: Response) => {
         }
 
 
-        try {
-            const query = 'SELECT * FROM applications WHERE id = ?'
+    
+        const query = 'SELECT * FROM applications WHERE id = ?'
 
-            db.get(query, [Number(id)], (err: any, row: any) => {
-                if (err) {
-                    res.status(500).send('Erro ao se conectar ao banco de dados!');
-                    return;
-                }
+        db.get(query, [Number(id)], (err: any, row: any) => {
+            if (err) {
+                res.status(500).send('Erro ao se conectar ao banco de dados!');
+                return;
+            }
+            
+            if (row) {
+                currentItem = row
+            } else {
+                res.status(400)
+                throw new Error('Id não consta em nossa base de dados!')
+            }
+        })
 
-                if (row) {
-
-                    for (const key in { jobName: jobName, companyName: companyName, applicationDate: applicationDate }) {
-                        if (typeof (row[key]) !== "undefined") {
-                            console.log("O tipo não é undefined")
-                            if (typeof (row[key]) !== "string") {
-                                res.status(422)
-                                throw new Error(`A propriedade "${key}" deveria ser do tipo "string", mas foi enviado um valor do tipo "${typeof row[key]}".`)
-                            } else if (typeof (row[key]) === "string" && row[key].length === 0) {
-                                res.status(400)
-                                throw new Error(`A propriedade "${key}" não pode ser vazia".`)
-                            }
-                        }
-                    }
-
-                    /* Object.entries({ jobName, companyName, applicationDate }).map((item) => {
-                        const [key, value] = item
-
-                        if (typeof (value) !== "undefined") {
-                            if (typeof (value) !== "string") {
-                                res.status(400)
-                                throw new Error(`A propriedade "${key}" deveria ser do tipo "string", mas foi enviado um valor do tipo "${typeof value}".`)
-                            } else if (typeof (value) === "string" && value.length === 0) {
-                                res.send(`erro: A propriedade "${key}" não pode ser vazia".`)
-                            }
-                        }
-
-                    }) */
-
-                    const newData = {
-                        jobName: jobName || row.job_name,
-                        companyName: companyName || row.company_name,
-                        applicationDate: applicationDate || row.application_date,
-                        jobRequirements: jobRequirements || row.job_requirements,
-                        processStatus: processStatus || row.process_status
-                    }
-
-                    res.status(200).json(row);
-                } else {
-                    res.status(400)
-                    throw new Error('Id não consta em nossa base de dados!')
-                }
-            })
-
-        } catch (error: any) {
-            res.status(500).send(error.message)
+        type TItens = {
+            jobName: string,
+            companyName: string,
+            applicationDate: string
         }
 
+        const itensTest: TItens = {
+            jobName: jobName,
+            companyName: companyName,
+            applicationDate: applicationDate
+        }
+        
+        for (const key in itensTest) {
+                    
+            if(itensTest[key as keyof TItens] !== undefined){
+                if(typeof(itensTest[key as keyof TItens]) !== 'string'){
+                    res.status(422)
+                    throw new Error(`A propriedade "${key}" deveria ser do tipo "string", mas foi enviado um valor do tipo "${typeof(itensTest[key as keyof TItens])}".`)
+                }else if(typeof(itensTest[key as keyof TItens]) === 'string' && itensTest[key as keyof TItens].length === 0){
+                    res.status(400)
+                    throw new Error(`A propriedade "${key}" não pode ser vazia".`)
+                }
+            }
+            
+        }
 
     } catch (error: any) {
         res.status(500).send(error.message)
