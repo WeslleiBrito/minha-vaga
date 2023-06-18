@@ -57,14 +57,18 @@ export const createApplication = async (req: Request, res: Response) => {
 
         
         const query = 'INSERT INTO applications (job_name, company_name, application_date, job_requirements, process_status) VALUES (?, ?, ?, ?, ?)'
-        const values = [jobName, companyName, applicationDate, jobRequirements, processStatus]
+        const values = [jobName, companyName, applicationDate, jobRequirements.toString(), processStatus]
 
         const validateDate = (date: string) =>  {
             const dateTest = parseISO(date)
 
             if(!isValid(dateTest)){
                 res.status(422)
-                throw new Error("A propriedade 'applicationDate' deve ser do tipo 'string' e possuir o seguinte formato 'aaaa-mm-dd")
+                throw new Error("A propriedade 'applicationDate' deve ser do tipo 'string' e possuir o seguinte formato 'aaaa-mm-dd.")
+            }
+
+            if(new Date(date).getTime() > new Date().getTime()){
+                throw new Error("A data da aplicação não pode ser maior que a data atual.")
             }
           
             
@@ -72,7 +76,23 @@ export const createApplication = async (req: Request, res: Response) => {
 
         validateDate(applicationDate)
 
-        res.status(200).json("Aplicação criada com sucesso!")
+        const newApplication = await new Promise((resolve, reject) => {
+            db.run(query, values, (err: any) => {
+                if(err){
+                    reject(err)
+                }
+
+                resolve(true)
+            })
+        })
+
+       if(newApplication){
+            res.status(200).json("Aplicação criada com sucesso!")
+       }else{
+            res.status(500)
+            throw new Error("Tivemos problemas para salvar a nova aplicação, tente novamente.")
+       }
+        
 
     } catch (error: any) {
         res.json({error: error.message})
