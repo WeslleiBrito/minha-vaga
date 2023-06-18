@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { db } from ".."
+import { LIST_STATUS } from "../interfaces/enum/LIST_STATUS.enum";
 
 
 export const createApplication = async (req: Request, res: Response) => {
@@ -14,34 +15,44 @@ export const createApplication = async (req: Request, res: Response) => {
 
                 if(value.length === 0){
                     res.status(400)
-                    throw new Error(`A propriedade "${key}" não pode ser vazia.`)
+                    throw new Error(`A propriedade '${key}' não pode ser vazia.`)
                 }
 
             }else{
                 res.status(422)
-                throw new Error(`A propriedade "${key}" deve ser do tipo 'string', porém o valor recebido foi do tipo '${typeof(value)}'.`)
+                throw new Error(`A propriedade '${key}' deve ser do tipo 'string', porém o valor recebido foi do tipo '${typeof(value)}'.`)
             }
         })
 
         if(!Array.isArray(jobRequirements)){
             res.status(422)
-            throw new Error(`A propriedade "jobRequirements" deve ser do tipo 'array' composta por 'strings' não vazia, mas o valor recebido foi '${typeof(jobRequirements)}'.`)
+            throw new Error(`A propriedade 'jobRequirements' deve ser do tipo 'array' composta por 'strings' não vazia, mas o valor recebido foi '${typeof(jobRequirements)}'.`)
         }else{
             if(jobRequirements.length === 0){
                 res.status(400)
-                throw new Error(`A propriedade "jobRequirements" deve ser do tipo 'array' composta por 'strings' não vazia.`) 
+                throw new Error(`A propriedade 'jobRequirements' deve ser do tipo 'array' composta por 'strings' não vazia.`) 
             }else{
                 jobRequirements.map((item, index) => {
-                    console.log(item)
                     if(typeof(item) === "string" && item.length === 0){
                         res.status(400)
-                        throw new Error(`A propriedade "jobRequirements" deve ser do tipo 'array' composta por 'strings' não vazia.`)
+                        throw new Error(`A propriedade 'jobRequirements' deve ser do tipo 'array' composta por 'strings' não vazia.`)
                     }else if(typeof(item) !== "string"){
                         res.status(422)
-                        throw new Error(`A propriedade "jobRequirements" espera receber um array composto apenas por strings, mas na posição "${index}", foi recebido um valor do tipo '${typeof(item)}.`)
+                        throw new Error(`A propriedade 'jobRequirements' espera receber um array composto apenas por strings, mas na posição '${index}', foi recebido um valor do tipo '${typeof(item)}'.`)
                     }
                 })
             }
+        }
+
+        function isListStatus(value: any): value is LIST_STATUS {
+            return Object.values(LIST_STATUS).includes(value);
+          }
+        
+
+
+        if(!isListStatus(processStatus)){
+            res.status(400)
+            throw new Error(`A propriedade 'processStatus' deve ter um desses valores: ['Candidato', 'Aguardando entrevista', 'Teste técnico', 'Aguardando resultado técnico', 'Envio de documentos', 'Finalizado'].`)
         }
 
         res.status(200).json("Aplicação criada com sucesso!")
