@@ -1,9 +1,11 @@
 import express, { Request, Response } from 'express'
 import { getAllAccounts } from './endpoints/getAllAccounts'
 import { createAccount } from './endpoints/createAccount'
+import { createApplication } from './endpoints/createApplication'
 
-import { LIST_STATUS, TUser } from './types'
+import { LIST_STATUS} from './types'
 import cors from 'cors'
+
 const sq = require('sqlite3').verbose()
 
 export const db = new sq.Database('D:/Usuário/wesll/OneDrive/Documentos/projetos-pessoais/minha-vaga/src/database/base.db')
@@ -101,10 +103,14 @@ const possibleSolutions = {
     }
 }
 
-// Retorna todos os usuários
-app.get('/accounts', getAllAccounts)
 // Incluir um novo usuário
 app.post('/account', createAccount)
+
+// Retorna todos os usuários
+app.get('/accounts', getAllAccounts)
+
+// Inclui uma nova aplicação a vaga
+app.post('/applications', createApplication)
 
 const validationApplication = (jobName?: string, companyName?: string, applicationDate?: string, jobRequirements?: Array<string>, processStatus?: string, edit?: boolean, id?: string) => {
 
@@ -162,7 +168,7 @@ const validationApplication = (jobName?: string, companyName?: string, applicati
 
 
 // Incluir novo processo
-app.post('/aplicacao', (req: Request, res: Response) => {
+/* app.post('/aplicacao', (req: Request, res: Response) => {
     const { jobName, companyName, applicationDate, jobRequirements, processStatus } = req.body
 
     const query = 'INSERT INTO applications (job_name, company_name, application_date, job_requirements, process_status) VALUES (?, ?, ?, ?, ?)'
@@ -195,7 +201,7 @@ app.post('/aplicacao', (req: Request, res: Response) => {
         )
     }
 
-})
+}) */
 
 // Retorna todas as aplicações
 app.get('/aplicacao', (req: Request, res: Response) => {
@@ -269,7 +275,6 @@ app.put('/aplicacao/:id', async (req: Request, res: Response) => {
     }
 
 })
-
 
 
 
