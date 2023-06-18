@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { db } from ".."
 import { LIST_STATUS } from "../interfaces/enum/LIST_STATUS.enum";
-
+import { isValid, parseISO } from 'date-fns'
 
 export const createApplication = async (req: Request, res: Response) => {
 
@@ -54,6 +54,23 @@ export const createApplication = async (req: Request, res: Response) => {
             res.status(400)
             throw new Error(`A propriedade 'processStatus' deve ter um desses valores: ['Candidato', 'Aguardando entrevista', 'Teste técnico', 'Aguardando resultado técnico', 'Envio de documentos', 'Finalizado'].`)
         }
+
+        
+        const query = 'INSERT INTO applications (job_name, company_name, application_date, job_requirements, process_status) VALUES (?, ?, ?, ?, ?)'
+        const values = [jobName, companyName, applicationDate, jobRequirements, processStatus]
+
+        const validateDate = (date: string) =>  {
+            const dateTest = parseISO(date)
+
+            if(!isValid(dateTest)){
+                res.status(422)
+                throw new Error("A propriedade 'applicationDate' deve ser do tipo 'string' e possuir o seguinte formato 'aaaa-mm-dd")
+            }
+          
+            
+        }
+
+        validateDate(applicationDate)
 
         res.status(200).json("Aplicação criada com sucesso!")
 
