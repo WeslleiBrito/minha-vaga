@@ -2,7 +2,7 @@ import { Request, Response } from "express"
 import { db } from ".."
 
 
-export const createUser = async (req: Request, res: Response) => {
+export const createAccount = async (req: Request, res: Response) => {
     try {
         const { name, email, password} = req.body
         const regexLetter = /[a-zA-Z]/
@@ -39,7 +39,7 @@ export const createUser = async (req: Request, res: Response) => {
         }
 
         const emailExist = await new Promise((resolve, reject) => {
-            db.all("SELECT * FROM users", (err: any, row: any) => {
+            db.all("SELECT * FROM accounts", (err: any, row: any) => {
                 if (err) {
                     reject(err);
                     return;
@@ -60,9 +60,9 @@ export const createUser = async (req: Request, res: Response) => {
             throw new Error("Este email já é usado em outra conta.")
         }
 
-        const query = 'INSERT INTO users (name, email) VALUES (?, ?)'
+        const query = 'INSERT INTO accounts (name, email, password) VALUES (?, ?, ?)'
 
-        db.run(query, [name, email], (err: any) => {
+        db.run(query, [name, email, password], (err: any) => {
             if (err) {
                 console.error('Erro ao inserir o novo usuário', err)
                 res.status(500).json(

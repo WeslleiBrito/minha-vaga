@@ -1,10 +1,11 @@
 import { db } from ".."
 import { Request, Response } from 'express'
 
-export const getAllUsers = (req: Request, res: Response) => {
+export const getAllAccounts = (req: Request, res: Response) => {
 
     try {
-        const query = "SELECT * FROM users"
+        const query = "SELECT * FROM accounts"
+        
         db.all(query, (err: any, rows: any) => {
 
             if(err){
@@ -12,8 +13,9 @@ export const getAllUsers = (req: Request, res: Response) => {
                 throw new Error("Não foi possivel se conectar ao banco de dados.")
             }
 
-            res.status(200).send(JSON.stringify(rows))
+            res.status(200).json(rows)
         })
+
     } catch (error: any) {
         res.send(error.message)
     }

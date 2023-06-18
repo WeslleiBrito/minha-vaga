@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express'
-import { getAllUsers } from './endpoints/getAllUsers'
-import { createUser } from './endpoints/createUser'
+import { getAllAccounts } from './endpoints/getAllAccounts'
+import { createAccount } from './endpoints/createAccount'
 
 import { LIST_STATUS, TUser } from './types'
 import cors from 'cors'
@@ -11,7 +11,7 @@ export const db = new sq.Database('D:/Usuário/wesll/OneDrive/Documentos/projeto
 db.serialize(
     () => {
         db.run(
-            'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT, email TEXT)'
+            'CREATE TABLE IF NOT EXISTS accounts (id INTEGER PRIMARY KEY, name TEXT, email TEXT, password TEXT)'
         )
     }
 )
@@ -102,9 +102,9 @@ const possibleSolutions = {
 }
 
 // Retorna todos os usuários
-app.get('/users', getAllUsers)
+app.get('/accounts', getAllAccounts)
 // Incluir um novo usuário
-app.post('/users', createUser)
+app.post('/account', createAccount)
 
 const validationApplication = (jobName?: string, companyName?: string, applicationDate?: string, jobRequirements?: Array<string>, processStatus?: string, edit?: boolean, id?: string) => {
 
