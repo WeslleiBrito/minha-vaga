@@ -15,6 +15,9 @@ export const createAccount = async (req: Request, res: Response) => {
             if(typeof(value) !== "string"){
                 res.status(422)
                 throw new Error(`Era esperado que a propriedade "${key}" fosse do tipo string, porém o valor recebido foi do tipo "${typeof(value)}."`)
+            }else if(typeof(value) === "string" && value.length === 0){
+                res.status(400)
+                throw new Error(`A propriedade '${key}' fosse recebida com valor vazio, verifique e tente novamente`)
             }
         })
 

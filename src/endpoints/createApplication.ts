@@ -3,6 +3,10 @@ import { db } from ".."
 import { LIST_STATUS } from "../interfaces/enum/LIST_STATUS.enum";
 import { isValid, parseISO } from 'date-fns'
 
+export const isListStatus = (value: any): value is LIST_STATUS => {
+    return Object.values(LIST_STATUS).includes(value);
+}
+
 export const createApplication = async (req: Request, res: Response) => {
 
     try {
@@ -44,9 +48,7 @@ export const createApplication = async (req: Request, res: Response) => {
             }
         }
 
-        function isListStatus(value: any): value is LIST_STATUS {
-            return Object.values(LIST_STATUS).includes(value);
-          }
+        
         
 
 

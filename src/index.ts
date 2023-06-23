@@ -3,8 +3,9 @@ import { getAllAccounts } from './endpoints/getAllAccounts'
 import { createAccount } from './endpoints/createAccount'
 import { createApplication } from './endpoints/createApplication'
 
-import { LIST_STATUS} from './types'
 import cors from 'cors'
+import { getAllApplications } from './endpoints/getAllApplications'
+import { editApplicationsById } from './endpoints/editApplicationsById'
 
 const sq = require('sqlite3').verbose()
 
@@ -44,21 +45,12 @@ app.post('/applications', createApplication)
 
 
 // Retorna todas as aplicações
-app.get('/aplicacao', (req: Request, res: Response) => {
-    const query = 'SELECT * FROM applications'
-    db.all(query, (err: any, rows: any) => {
-        if (err) {
-            console.error('Erro ao buscar os dados no banco de dados', err.code)
-            res.status(500).json({ error: 'Erro ao buscar os dados no banco de dados' })
-            return
-        }
-        console.log(rows)
-        res.status(200).json(rows)
-    })
-})
+app.get('/applications', getAllApplications)
 
 // Edita uma aplicação
-app.put('/aplicacao/:id', async (req: Request, res: Response) => {
+app.put('/applications/:id', editApplicationsById)
+
+/* app.put('/aplicacao/:id', async (req: Request, res: Response) => {
 
     try {
         const id = req.params.id
@@ -114,7 +106,7 @@ app.put('/aplicacao/:id', async (req: Request, res: Response) => {
         res.send(error.message)
     }
 
-})
+}) */
 
 
 
