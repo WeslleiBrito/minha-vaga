@@ -1,7 +1,6 @@
 import { db } from ".."
 import { Request, Response } from 'express'
-import { LIST_STATUS } from "../interfaces/enum/LIST_STATUS.enum"
-import { isListStatus } from "./createApplication"
+import { isListStatus, validateJobRequirements } from "./createApplication"
 
 export const editApplicationsById = async (req: Request, res: Response) => {
     try {
@@ -13,6 +12,8 @@ export const editApplicationsById = async (req: Request, res: Response) => {
             throw new Error("Informe um id válido!")
         }
 
+        let datas
+
         const idExists = await new Promise((resolve, reject) => {
             db.all("SELECT * FROM applications", (err: any, row: any) => {
                 if (err) {
@@ -20,6 +21,21 @@ export const editApplicationsById = async (req: Request, res: Response) => {
                     return;
                 }
 
+                
+
+                const datasBd = row.find((item : any) => {
+                    return item.id = Number(id)
+                }) 
+
+                datas = [
+                    jobName ? jobName : datasBd.job_name,
+                    companyName ? companyName : datasBd.company_name,
+                    applicationDate ? applicationDate : datasBd.application_date,
+                    jobRequirements ? jobRequirements.toString() : datasBd.job_requirements,
+                    processStatus ? processStatus : datasBd.process_status
+                ]
+
+                
                 row.map((application: any) => {
                     if(application.id === Number(id)){
                         resolve(true)
@@ -29,12 +45,14 @@ export const editApplicationsById = async (req: Request, res: Response) => {
                 resolve(false);
             });
         });
+       
 
         if(!idExists){
             res.status(400)
             throw new Error("O id informado não consta em nossa base de dados, verifique e tente novamente!")
         }
 
+   
         // Verificar se todos os elementos são do tipo string
 
         Object.entries({jobName, companyName, applicationDate, processStatus}).map((item) => {
@@ -59,10 +77,13 @@ export const editApplicationsById = async (req: Request, res: Response) => {
             throw new Error(`A propriedade 'processStatus' deve ter um desses valores: ['Candidato', 'Aguardando entrevista', 'Teste técnico', 'Aguardando resultado técnico', 'Envio de documentos', 'Finalizado'].`)
         }
         
+    validateJobRequirements(jobRequirements)
+    
+    await db.run(`UPDATE applications SET job_name = ?, company_name = ?, application_date = ?, job_requirements = ?, process_status = ? WHERE id = ${Number(id)}`, datas);
 
         res.status(200).send("Cadastro enviado")
     } catch (error: any) {
-        res.send(error.message)
+        res.json(error.message)
     }
     
 }

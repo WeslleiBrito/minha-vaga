@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express'
+import express from 'express'
 import { getAllAccounts } from './endpoints/getAllAccounts'
 import { createAccount } from './endpoints/createAccount'
 import { createApplication } from './endpoints/createApplication'
@@ -49,65 +49,6 @@ app.get('/applications', getAllApplications)
 
 // Edita uma aplicação
 app.put('/applications/:id', editApplicationsById)
-
-/* app.put('/aplicacao/:id', async (req: Request, res: Response) => {
-
-    try {
-        const id = req.params.id
-
-        const { jobName, companyName, applicationDate, jobRequirements, processStatus } = req.body
-
-
-        if (isNaN(Number(id))) {
-
-            const messageError = {
-                portuguese: [
-                    `Era esperado um valor do tipo "number", mas o valor enviado foi do tipo "${typeof id}".`
-                ]
-            }
-
-            res.status(400)
-            throw new Error(`${JSON.stringify(messageError)}`)
-        }
-
-        const query = 'SELECT * FROM applications WHERE id = ?'
-
-        const row = await new Promise((resolve, reject) => {
-            db.get(query, [Number(id)], (err: any, row: any) => {
-                if (err) {
-                    reject(err);
-                    return;
-                }
-                resolve(row);
-            });
-        });
-
-
-        if (!row) {
-            res.status(400)
-            throw new Error('Id não consta em nossa base de dados!')
-        }
-
-        Object.entries({ jobName, companyName, applicationDate }).map((item) => {
-            const [key, value] = item
-
-            if (typeof (value) !== "undefined") {
-                if (typeof (value) !== "string") {
-                    res.status(422)
-                    throw new Error(`A propriedade "${key}" deveria ser do tipo "string", mas foi enviado um valor do tipo "${typeof (value)}".`)
-                } else if (typeof (value) === 'string' && value.length === 0) {
-                    res.status(400)
-                    throw new Error(`A propriedade "${key}" não pode ser vazia".`)
-                }
-            }
-        })
-
-    } catch (error: any) {
-        res.send(error.message)
-    }
-
-}) */
-
 
 
 app.listen(3003, () => {
