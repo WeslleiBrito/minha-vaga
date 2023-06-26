@@ -18,5 +18,6 @@ export type TApplication = {
     companyName: string,
     applicationDate: string,
     jobRequirements: Array<string>,
+    email: string | undefined,
     processStatus: LIST_STATUS
 }

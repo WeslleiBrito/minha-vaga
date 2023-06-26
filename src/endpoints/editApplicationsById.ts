@@ -7,7 +7,7 @@ export const editApplicationsById = async (req: Request, res: Response) => {
         const id = req.params.id
         const { jobName, companyName, applicationDate, jobRequirements, processStatus } = req.body
 
-        if(isNaN(Number(id))){
+        if (isNaN(Number(id))) {
             res.status(422)
             throw new Error("Informe um id válido!")
         }
@@ -21,23 +21,22 @@ export const editApplicationsById = async (req: Request, res: Response) => {
                     return;
                 }
 
-                
 
-                const datasBd = row.find((item : any) => {
+
+                const datasBd = row.find((item: any) => {
                     return item.id = Number(id)
-                }) 
+                })
 
                 datas = [
                     jobName ? jobName : datasBd.job_name,
                     companyName ? companyName : datasBd.company_name,
                     applicationDate ? applicationDate : datasBd.application_date,
-                    jobRequirements ? jobRequirements.toString() : datasBd.job_requirements,
                     processStatus ? processStatus : datasBd.process_status
                 ]
 
-                
+
                 row.map((application: any) => {
-                    if(application.id === Number(id)){
+                    if (application.id === Number(id)) {
                         resolve(true)
                     }
                 })
@@ -45,45 +44,82 @@ export const editApplicationsById = async (req: Request, res: Response) => {
                 resolve(false);
             });
         });
-       
 
-        if(!idExists){
+        const bdRequirements = await new Promise((resolve, reject) => {
+
+            db.all("SELECT * FROM requirements", (err: any, rows: any) => {
+
+                if (err) {
+                    res.status(500)
+                    throw new Error("Erro no servidor")
+                }
+
+                const requirements = rows.filter((item: any) => {
+                    return item.reference === Number(id)
+                })
+
+                resolve(requirements.map((item: any) => {
+                    return item.requirement
+                }))
+            })
+        })
+
+        const datasRequirements = jobRequirements ? jobRequirements : bdRequirements
+        console.log(datasRequirements)
+
+        if (!idExists) {
             res.status(400)
             throw new Error("O id informado não consta em nossa base de dados, verifique e tente novamente!")
         }
 
-   
+
         // Verificar se todos os elementos são do tipo string
 
-        Object.entries({jobName, companyName, applicationDate, processStatus}).map((item) => {
+        Object.entries({ jobName, companyName, applicationDate, processStatus }).map((item) => {
             const [key, value] = item
 
-            if(typeof(value) !== "undefined"){
-                if(typeof(value) === "string"){
-                    if(value.length === 0){
+            if (typeof (value) !== "undefined") {
+                if (typeof (value) === "string") {
+                    if (value.length === 0) {
                         res.status(400)
                         throw new Error(`A propriedade '${key}' fosse recebida com valor vazio, verifique e tente novamente!`)
                     }
-                }else{
+                } else {
                     res.status(422)
-                throw new Error(`Era esperado que a propriedade '${key}' fosse do tipo string, porém o valor recebido foi do tipo '${typeof(value)}.'`)
+                    throw new Error(`Era esperado que a propriedade '${key}' fosse do tipo string, porém o valor recebido foi do tipo '${typeof (value)}.'`)
                 }
             }
         })
 
 
-        if(processStatus && !isListStatus(processStatus)){
+        if (processStatus && !isListStatus(processStatus)) {
             res.status(400)
             throw new Error(`A propriedade 'processStatus' deve ter um desses valores: ['Candidato', 'Aguardando entrevista', 'Teste técnico', 'Aguardando resultado técnico', 'Envio de documentos', 'Finalizado'].`)
         }
-        
-    validateJobRequirements(jobRequirements)
-    
-    await db.run(`UPDATE applications SET job_name = ?, company_name = ?, application_date = ?, job_requirements = ?, process_status = ? WHERE id = ${Number(id)}`, datas);
+
+        validateJobRequirements(jobRequirements)
+
+        if (typeof (jobRequirements) !== "undefined") {
+
+            await db.run("DELETE FROM requirements WHERE reference = ?", [Number(id)], (err: any) => {
+                if (err) {
+                    res.status(500)
+                    throw new Error("Ocorreu um erro no pocessamento da atualizaão.")
+                }
+            })
+
+            datasRequirements.map((requirement: any) => {
+                db.run("INSERT INTO requirements (requirement, reference) VALUES (?, ?)", [requirement, Number(id)])
+            })
+
+        }
+
+
+        await db.run(`UPDATE applications SET job_name = ?, company_name = ?, application_date = ?, process_status = ? WHERE id = ${Number(id)}`, datas);
 
         res.status(200).send("Cadastro enviado")
     } catch (error: any) {
         res.json(error.message)
     }
-    
+
 }
