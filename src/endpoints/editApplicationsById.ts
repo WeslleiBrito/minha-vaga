@@ -5,9 +5,11 @@ import { isListStatus, validateJobRequirements } from "./createApplication"
 export const editApplicationsById = async (req: Request, res: Response) => {
     try {
         const id = req.params.id
-        const { jobName, companyName, applicationDate, jobRequirements, processStatus } = req.body
+        const { jobName, companyName, applicationDate, jobRequirements, processStatus, linkApplication, email } = req.body
+        const regexEmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+        const regexURL = /((https?:\/\/)|(ftp:\/\/)|(^))([0-9a-zA-Z][-\w]*[0-9a-zA-Z]\.)+([a-zA-Z]{2,9})(:\d{1,4})?([-\w\/#~:.?+=&amp;%@~]*)/
 
-        if(isNaN(Number(id))){
+        if (isNaN(Number(id))) {
             res.status(422)
             throw new Error("Informe um id válido!")
         }
@@ -21,11 +23,11 @@ export const editApplicationsById = async (req: Request, res: Response) => {
                     return;
                 }
 
-                
 
-                const datasBd = row.find((item : any) => {
+
+                const datasBd = row.find((item: any) => {
                     return item.id = Number(id)
-                }) 
+                })
 
                 datas = [
                     jobName ? jobName : datasBd.job_name,
@@ -35,9 +37,9 @@ export const editApplicationsById = async (req: Request, res: Response) => {
                     processStatus ? processStatus : datasBd.process_status
                 ]
 
-                
+
                 row.map((application: any) => {
-                    if(application.id === Number(id)){
+                    if (application.id === Number(id)) {
                         resolve(true)
                     }
                 })
@@ -45,45 +47,56 @@ export const editApplicationsById = async (req: Request, res: Response) => {
                 resolve(false);
             });
         });
-       
 
-        if(!idExists){
+        if (!idExists) {
             res.status(400)
             throw new Error("O id informado não consta em nossa base de dados, verifique e tente novamente!")
         }
 
-   
+
         // Verificar se todos os elementos são do tipo string
 
-        Object.entries({jobName, companyName, applicationDate, processStatus}).map((item) => {
+        Object.entries({ jobName, companyName, applicationDate, processStatus }).map((item) => {
             const [key, value] = item
 
-            if(typeof(value) !== "undefined"){
-                if(typeof(value) === "string"){
-                    if(value.length === 0){
+            if (typeof (value) !== "undefined") {
+                if (typeof (value) === "string") {
+                    if (value.length === 0) {
                         res.status(400)
                         throw new Error(`A propriedade '${key}' fosse recebida com valor vazio, verifique e tente novamente!`)
                     }
-                }else{
+                } else {
                     res.status(422)
-                throw new Error(`Era esperado que a propriedade '${key}' fosse do tipo string, porém o valor recebido foi do tipo '${typeof(value)}.'`)
+                    throw new Error(`Era esperado que a propriedade '${key}' fosse do tipo string, porém o valor recebido foi do tipo '${typeof (value)}.'`)
                 }
             }
         })
 
+        if (typeof (linkApplication) !== "undefined" && !regexURL.test(linkApplication)) {
+            res.status(400)
+            throw new Error("URL inválida.")
+        }
 
-        if(processStatus && !isListStatus(processStatus)){
+        if (typeof (email) !== "undefined") {
+
+            if (!regexEmail.test(email) || typeof (email) !== "string") {
+                res.status(400)
+                throw new Error("Email inválido.")
+            }
+        }
+
+        if (processStatus && !isListStatus(processStatus)) {
             res.status(400)
             throw new Error(`A propriedade 'processStatus' deve ter um desses valores: ['Candidato', 'Aguardando entrevista', 'Teste técnico', 'Aguardando resultado técnico', 'Envio de documentos', 'Finalizado'].`)
         }
-        
-    validateJobRequirements(jobRequirements)
-    
-    await db.run(`UPDATE applications SET job_name = ?, company_name = ?, application_date = ?, job_requirements = ?, process_status = ? WHERE id = ${Number(id)}`, datas);
+
+        validateJobRequirements(jobRequirements)
+
+        await db.run(`UPDATE applications SET job_name = ?, company_name = ?, application_date = ?, job_requirements = ?, process_status = ? WHERE id = ${Number(id)}`, datas);
 
         res.status(200).send("Cadastro enviado")
     } catch (error: any) {
         res.json(error.message)
     }
-    
+
 }

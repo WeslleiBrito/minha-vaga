@@ -4,39 +4,39 @@ import { db } from ".."
 
 export const createAccount = async (req: Request, res: Response) => {
     try {
-        const { name, email, password} = req.body
+        const { name, email, password } = req.body
         const regexLetter = /[a-zA-Z]/
         const regexNumber = /(?=.*\d)/
         const regexSpecialCharacter = /[!#$%&@§*=+|]/
 
-        Object.entries({name, email, password}).map((property) => {
+        Object.entries({ name, email, password }).map((property) => {
             const [key, value] = property
 
-            if(typeof(value) !== "string"){
+            if (typeof (value) !== "string") {
                 res.status(422)
-                throw new Error(`Era esperado que a propriedade "${key}" fosse do tipo string, porém o valor recebido foi do tipo "${typeof(value)}."`)
-            }else if(typeof(value) === "string" && value.length === 0){
+                throw new Error(`Era esperado que a propriedade "${key}" fosse do tipo string, porém o valor recebido foi do tipo "${typeof (value)}."`)
+            } else if (typeof (value) === "string" && value.length === 0) {
                 res.status(400)
-                throw new Error(`A propriedade '${key}' fosse recebida com valor vazio, verifique e tente novamente`)
+                throw new Error(`A propriedade '${key}' foi recebida com valor vazio, verifique e tente novamente`)
             }
         })
 
-        if(password.length < 5){
+        if (password.length < 5) {
             res.status(400)
             throw new Error("A senha deve ter pelo menos 5 carácteres.")
         }
 
-        if(!regexLetter.test(password)){
+        if (!regexLetter.test(password)) {
             res.status(400)
             throw new Error("A senha deve ter pelo menos uma letra.")
         }
 
-        if(!regexNumber.test(password)){
+        if (!regexNumber.test(password)) {
             res.status(400)
             throw new Error("A senha deve possuir pelo menos um número.")
         }
 
-        if(!regexSpecialCharacter.test(password)){
+        if (!regexSpecialCharacter.test(password)) {
             res.status(400)
             throw new Error("A senha deve possuir pelo menos um desses carácteres especiais: ['!', '#', '$', '%', '&', '@', '§', '*', '=', '+', '|'].")
         }
@@ -49,7 +49,7 @@ export const createAccount = async (req: Request, res: Response) => {
                 }
 
                 row.map((account: any) => {
-                    if(account.email === email){
+                    if (account.email === email) {
                         resolve(true)
                     }
                 })
@@ -58,7 +58,7 @@ export const createAccount = async (req: Request, res: Response) => {
             });
         });
 
-        if(emailExist){
+        if (emailExist) {
             res.status(400)
             throw new Error("Este email já é usado em outra conta.")
         }
@@ -83,5 +83,5 @@ export const createAccount = async (req: Request, res: Response) => {
     } catch (error: any) {
         res.json(error.message)
     }
-    
+
 }

@@ -9,12 +9,12 @@ import { editApplicationsById } from './endpoints/editApplicationsById'
 
 const sq = require('sqlite3').verbose()
 
-export const db = new sq.Database('D:/Usuário/wesll/OneDrive/Documentos/projetos-pessoais/minha-vaga/src/database/base.db')
+export const db = new sq.Database('src/database/base.db')
 
 db.serialize(
     () => {
         db.run(
-            'CREATE TABLE IF NOT EXISTS accounts (id INTEGER PRIMARY KEY, name TEXT, email TEXT, password TEXT)'
+            'CREATE TABLE IF NOT EXISTS accounts (id INTEGER PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE, password TEXT NOT NULL)'
         )
     }
 )
@@ -22,7 +22,7 @@ db.serialize(
 db.serialize(
     () => {
         db.run(
-            'CREATE TABLE IF NOT EXISTS applications (id INTEGER PRIMARY KEY, job_name TEXT, company_name TEXT, application_date TEXT, job_requirements TEXT, process_status TEXT)'
+            'CREATE TABLE IF NOT EXISTS applications (id INTEGER PRIMARY KEY, job_name TEXT NOT NULL, company_name TEXT NOT NULL, application_date TEXT NOT NULL, job_requirements TEXT NOT NULL, process_status TEXT NOT NULL, link_application TEXT NOT NULL, email TEXT)'
         )
     }
 )
