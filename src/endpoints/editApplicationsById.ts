@@ -65,7 +65,6 @@ export const editApplicationsById = async (req: Request, res: Response) => {
         })
 
         const datasRequirements = jobRequirements ? jobRequirements : bdRequirements
-        console.log(datasRequirements)
 
         if (!idExists) {
             res.status(400)
@@ -108,14 +107,14 @@ export const editApplicationsById = async (req: Request, res: Response) => {
                 }
             })
 
-            datasRequirements.map((requirement: any) => {
-                db.run("INSERT INTO requirements (requirement, reference) VALUES (?, ?)", [requirement, Number(id)])
-            })
-
         }
 
 
         await db.run(`UPDATE applications SET job_name = ?, company_name = ?, application_date = ?, process_status = ? WHERE id = ${Number(id)}`, datas);
+
+        await datasRequirements.map((requirement: any) => {
+            db.run("INSERT INTO requirements (requirement, reference) VALUES (?, ?)", [requirement, Number(id)])
+        })
 
         res.status(200).send("Cadastro enviado")
     } catch (error: any) {
