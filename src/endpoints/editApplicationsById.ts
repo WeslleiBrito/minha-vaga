@@ -15,6 +15,20 @@ export const editApplicationsById = async (req: Request, res: Response) => {
         }
 
         let datas
+        let idTest
+        await new Promise((resolve, reject) => {
+            db.run(`SELECT * FROM applications WHERE id = ${Number(id)}`, (err: any, row: any) => {
+                if (err) {
+                    res.status(500)
+                    reject(new Error("Problemas com a conexão com banco de dados!"))
+                } else {
+                    idTest = row
+                    console.log(idTest)
+                }
+            })
+        })
+
+
 
         const idExists = await new Promise((resolve, reject) => {
             db.all("SELECT * FROM applications", (err: any, row: any) => {

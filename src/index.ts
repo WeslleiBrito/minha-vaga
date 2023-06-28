@@ -6,6 +6,7 @@ import { createApplication } from './endpoints/createApplication'
 import cors from 'cors'
 import { getAllApplications } from './endpoints/getAllApplications'
 import { editApplicationsById } from './endpoints/editApplicationsById'
+import { testeApplication } from './endpoints/testesApplication'
 
 const sq = require('sqlite3').verbose()
 
@@ -22,10 +23,28 @@ db.serialize(
 db.serialize(
     () => {
         db.run(
-            'CREATE TABLE IF NOT EXISTS applications (id INTEGER PRIMARY KEY, job_name TEXT NOT NULL, company_name TEXT NOT NULL, application_date TEXT NOT NULL, job_requirements TEXT NOT NULL, process_status TEXT NOT NULL, link_application TEXT NOT NULL, email TEXT)'
+            'CREATE TABLE IF NOT EXISTS applications (id TEXT PRIMARY KEY UNIQUE NOT NULL, job_name TEXT NOT NULL, company_name TEXT NOT NULL, create_at TEXT DEFAULT (DATE()) NOT NULL, process_status TEXT NOT NULL, link_application TEXT NOT NULL, email TEXT);'
         )
     }
 )
+
+db.serialize(
+    () => {
+        db.run(
+            'CREATE TABLE IF NOT EXISTS requirements (id TEXT PRIMARY KEY UNIQUE NOT NULL, requirement TEXT NOT NULL);'
+        )
+    }
+)
+
+db.serialize(
+    () => {
+        db.run(
+            'CREATE TABLE IF NOT EXISTS applications_requirements (applications_id TEXT NOT NULL, requirements_id TEXT NOT NULL, FOREIGN KEY (applications_id) REFERENCES applications (id), FOREIGN KEY (requirements_id) REFERENCES requirements (id));'
+        )
+    }
+)
+
+
 
 const app = express()
 
@@ -50,6 +69,7 @@ app.get('/applications', getAllApplications)
 // Edita uma aplicação
 app.put('/applications/:id', editApplicationsById)
 
+app.post('/testApplication', testeApplication)
 
 app.listen(3003, () => {
     console.log("Api rodando na porta 3003!")
