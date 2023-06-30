@@ -39,7 +39,7 @@ db.serialize(
 db.serialize(
     () => {
         db.run(
-            'CREATE TABLE IF NOT EXISTS applications_requirements (applications_id TEXT NOT NULL, requirements_id TEXT NOT NULL, FOREIGN KEY (applications_id) REFERENCES applications (id), FOREIGN KEY (requirements_id) REFERENCES requirements (id));'
+            'CREATE TABLE IF NOT EXISTS applications_requirements (application_id INTEGER NOT NULL, requirement TEXT NOT NULL, FOREIGN KEY (applications_id) REFERENCES applications (id), FOREIGN KEY (requirements_id) REFERENCES requirements (id));'
         )
     }
 )
